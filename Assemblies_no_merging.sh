@@ -19,3 +19,13 @@ do
 	prefix=${file%_R1.trimmed.fastq.gz}
 	sickle pe -f ${prefix}_R1.trimmed.fastq.gz -r ${prefix}_R2.trimmed.fastq.gz -t sanger -o ${prefix}_R1.qc.fastq.gz -p ${prefix}_R2.qc.fastq.gz -s ${prefix}.qcsingles.fastq.gz -n > sickle_${prefix}.txt
 done
+
+
+#Assembled with Spades
+
+for file in *_R1.qc.fastq
+do
+	prefix=${file%_R1.qc.fastq}
+	spades.py -1 ${prefix}_R1.qc.fastq -2 ${prefix}_R2.qc.fastq --careful -o ${prefix}_assembly
+done
+
