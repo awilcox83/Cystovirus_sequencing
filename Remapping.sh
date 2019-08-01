@@ -1,5 +1,6 @@
 #Mapping reads back to assembled genomes to see average coverage.
 
+#If trimming still needed:
 for file in *_R1_001.fastq
 do
 	prefix=${file%_R1_001.fastq}
@@ -21,13 +22,13 @@ done
 
 # build references
 
-
 for file in *.fasta
 do
 	prefix=${file%.fasta}
 	bowtie2-build ${prefix}.fasta ${prefix}_ref
 done
 
+# mapping
 
 for file in *R1.qc.fastq
 do
@@ -36,6 +37,8 @@ do
 	echo ${sample}
 	bowtie2 -x ${sample}_ref -U ${prefix}R1.unpaired.qc.fastq -U ${prefix}R2.unpaired.qc.fastq -1 ${prefix}R1.qc.fastq -2 ${prefix}R2.qc.fastq -S ${prefix}.mapped.SAM
 done	
+
+# Get depth and bam-readcount
 
 for file in *.mapped.SAM 
 do
@@ -46,7 +49,3 @@ do
 	bam-readcount -b 20 -w 1 ${prefix}.mapped.sorted.BAM > ${prefix}.tab
 	samtools depth ${prefix}.mapped.sorted.BAM | awk '{sum+=$3} END { print "Average = ",sum/NR}'
 done
-
-
-###  average coverage
-samtools depth 28i.mapped.sorted.BAM | awk '{sum+=$3} END { print "Average = ",sum/NR}'
