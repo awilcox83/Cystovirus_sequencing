@@ -14,10 +14,10 @@ do
 	-a AATGATACGGCGACCACCGAGATCTACACCTCTCTATTCGTCGGCAGCGTC > ${prefix}.txt
 done
 
-for file in *_R1.trimmed.fastq.gz
+for file in *_R1.trimmed.fastq.
 do
-	prefix=${file%_R1.trimmed.fastq.gz}
-	sickle pe -f ${prefix}_R1.trimmed.fastq.gz -r ${prefix}_R2.trimmed.fastq.gz -t sanger -o ${prefix}_R1.qc.fastq.gz -p ${prefix}_R2.qc.fastq.gz -s ${prefix}.qcsingles.fastq.gz -n > sickle_${prefix}.txt
+	prefix=${file%_R1.trimmed.fastq}
+	sickle pe -f ${prefix}_R1.trimmed.fastq -r ${prefix}_R2.trimmed.fastq -t sanger -o ${prefix}_R1.qc.fastq -p ${prefix}_R2.qc.fastq -s ${prefix}.qcsingles.fastq -n > sickle_${prefix}.txt
 done
 
 
