@@ -4,7 +4,7 @@
 #Index all fastas for mapping
 
 
-for file in reference_genomes/*.fasta
+for file in *.fasta
 do
 	prefix=${file%.fasta}
 	bowtie2-build ${prefix}.fasta ${prefix}_ref
