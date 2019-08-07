@@ -12,7 +12,6 @@ done
 
 #Trimming and quality for reads
 
-cd unassembled_fastqs
 for file in *_R1_001.fastq
 do
 	prefix=${file%_R1_001.fastq}
