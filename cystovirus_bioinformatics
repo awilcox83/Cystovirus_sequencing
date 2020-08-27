@@ -1,0 +1,54 @@
+
+
+# Updating this comment with programs as I use them: cutadapt, spades, MAFFT
+
+
+# I assume you'll upload these sequences to SRI at some point.  You can add the wget commands here.
+# I will be working with the files locally.
+
+# TRIMMING
+# cutadapt was used to trim adapters and primers from reads. Primer and adapter sequences for Illumina Nextera library prep kit retrieved from https://support.illumina.com/content/dam/illumina-support/documents/documentation/chemistry_documentation/experiment-design/illumina-adapter-sequences-1000000002694-10.pdf“.
+for file in *_R1.fastq.gz
+do
+	prefix=${file%_R1.fastq.gz}
+	cutadapt ${prefix}_R1.fastq.gz ${prefix}_R2.fastq.gz -m 25 -n 2 -o ${prefix}_R1.trimmed.fastq.gz -p ${prefix}_R2.trimmed.fastq.gz \
+	-b TCGTCGGCAGCGTCAGATGTGTATAAGAGACAG -b GTCTCGTGGGCTCGGAGATGTGTATAAGAGACAG \
+	-a CAAGCAGAAGACGGCATACGAGATTCGCCTTAGTCTCGTGGGCTCGG -a CAAGCAGAAGACGGCATACGAGATTCGCCTTAGTCTCGTGGGCTCGG \
+	-a CAAGCAGAAGACGGCATACGAGATCTAGTACGGTCTCGTGGGCTCGG -a CAAGCAGAAGACGGCATACGAGATTTCTGCCTGTCTCGTGGGCTCGG \
+	-a CAAGCAGAAGACGGCATACGAGATGCTCAGGAGTCTCGTGGGCTCGG -a CAAGCAGAAGACGGCATACGAGATAGGAGTCCGTCTCGTGGGCTCGG \
+	-a CAAGCAGAAGACGGCATACGAGATCATGCCTAGTCTCGTGGGCTCGG -a AATGATACGGCGACCACCGAGATCTACACTAGATCGCTCGTCGGCAGCGTC \
+	-a AATGATACGGCGACCACCGAGATCTACACCTCTCTATTCGTCGGCAGCGTC > ${prefix}.txt
+done
+
+
+#This loop uses SPAdes to assemble twice, once with the -meta flag and once without.
+
+for file in *_R1.trimmed.fastq.gz
+do
+	prefix=${file%_R1.fastq.gz}
+	spades.py  -1 ${prefix}_R1.trimmed.fastq.gz -2 {prefix}_R2.trimmed.fastq.gz -o ca71b_assembly
+	spades.py --meta -1 {prefix}_R1.trimmed.fastq.gz -2 {prefix}_R2.trimmed.fastq.gz -o ca71b_assembly_meta
+done
+
+# ASSEMBLY
+# The next part was done manually.  For each sample, both assemblies (meta and normal) were checked to see how well they had assembled.  
+# In many cases, there were three neat contigs that corresponded to the three cystovirus segments.  
+# These were confirmed with blast, and copied to a new text file.  Sometimes the normal assembly hadn't assembled into neat contigs, 
+# but the -meta assembly had, so that was used instead.  Some assembled into multiple smaller contigs. In these cases, I discarded them
+# and only used the ones I could get full sequences for.  However, if you wish to include partial/unassembled sequences, the data is still available.
+
+# ASSEMBLY TRIMMING
+# Sequence coverage was poor at the ends.  In addition, repetitive regions mean the assembly may not have been good here.
+# To manually trim the ends, I first aligned the sequences with a reference genome.
+# For the Phi6-like phage, I collated all S segments, M segments and L segments in separate files.
+# The webserver https://www.bioinformatics.org/sms/rev_comp.html was used to reverse sequences so all sequences were in the same direction.
+# Alignment was carried out using MAFFT.  I used EBI's webserver (https://www.ebi.ac.uk/Tools/msa/mafft/), but I believe this is the command.
+mafft --clustalout L_segments.fasta > L_alignment.fasta
+mafft --clustalout M_segments.fasta > M_alignment.fasta
+mafft --clustalout S_segments.fasta > S_alignment.fasta
+# -clustalout is important because it visually aligns the sequences next to each other.  Normal output spaces sequences with "-" but keeps them separate.
+# I trimmed sequences by eye, being conservative in which bases I decided to retain.  
+# Firstly, everything before the 5' end of the reference and after the 3' end was removed. 
+# I decided where to cut sequences based on similarity to other sequences.
+# If the first bases did not share similarity with the reference or other sequences, bases were removed until it aligned properly.
+# Finally, I took each trimmed segment and combined it in a new FASTA file with the other segments from that sample.
