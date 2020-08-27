@@ -1,0 +1,61 @@
+# PHYLOGENETICS
+
+I have written a quick guide to using BEAST to produce cystovirus phylogenies.  If you have any questions, message me on Slack.
+In addition, this tutorial was made for the workshop I attended, and is a good starting point if you want to understand BEAST further.
+https://beast.community/workshop_influenza_phylodynamics
+
+
+Phylogenetics were carried out with BEAST v1.10.4
+BEAST uses a GUI and comes as three programs, all of which need to be used.
+
+BEAUti is where you will enter the parameters for your tree and load the sequence data.
+BEAST uses the output from BEAUti to produce phylogenetic trees.
+TreeAnnotater summarises the trees produced by BEAST onto a single tree, and annotates with posterior probabilities.
+
+Firstly, you need to align the sequences.  These should be fresh alignments using the trimmed sequences using MAFFT.  
+You can do entire segments or individual genes.  Do not use --clustalout flag on MAFFT because BEAUti is not compatible with that format.
+For example:
+
+mafft S_segments.fasta > S_alignment.fasta
+
+BEAUti has a LOT of options, and it would take too long to go into all of them (many of them I don't fully understand).
+I will go through how I set it up, and where I move from the defaults.
+There are a number of tabs across the top of the screen.  I will use caps so you can identify which one I am on.
+
+PARTITIONS
+Click the + sign in the bottom left and load your alignment.  
+You will see the number of taxa (i.e. samples) and the number of sites (i.e. nucleotides).
+The number of sites should be higher than the length of the segment/gene, but not by a huge amount. 
+TIPS
+I did not enable tip dates.  This is where you could input collection dates if you wanted.
+SITES
+Change site heterogeneity model to gamma, and the number of gamma categories to 4.
+CLOCK
+Set to strict.  Looser clocks are usually used for alignments with more diversity (such as genes from different eukaryotic species)
+TREES
+Change Tree Prior to coalescent: exponential growth.  This is the better option for viral phylogenies because they grow exponentially.
+PRIORS
+Click on exponential.growthRate, and in the box that pops up change Scale to 100. 
+This differentiates the scale of viral exponential growth from that of say yeast or bacteria which simply double.
+TAXA/TRAITS/STATES/OPERATORS
+I did not use these options.
+MCMC
+Chain length is a balance between the complexity of the analysis (ie the number of steps taken to complete it) and the length it takes to run.
+We could probably get away with a shorter chain length for our dataset, but I stuck with the default of 10,000,000.
+Log parameters should be chain length / 10,000.  In this case it would be 1000.
+The other options refer to filenames.  Pick what you want.
+Click Generate BEAST file in the bottom right.  This will save an XML file.
+
+Open BEAST, click choose file, and load up the XML file you just made.
+I encountered an issue where it wanted to use previous log file names and refused to run.  
+If you run into this issue, move/rename your previous log files if you want to keep them, then check allow overwriting of log files.
+Run.  This will take some time.
+When the number on the left side of the output reacher the chain length (10 million in this case), the analysis will be complete.
+
+Open TreeAnnotator.
+Burnin is usually set to 10% of the number of states, so enter 1,000,000
+Input tree file is the output tree from BEAST.  Output tree file is whatever you want to save it as.  
+Make sure to add a .trees suffix so you can load it in FigTree.
+Leave everything else as default
+
+This should make you some nice trees.  You can view them in FigTree, which also contains a lot of options to make it more readable/presentable for publication.
